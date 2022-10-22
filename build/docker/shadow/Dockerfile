@@ -11,6 +11,11 @@ RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list && 
 COPY build/docker/shadow/sshd_config /etc/ssh/sshd_config
 RUN chmod +rw /etc/ssh/sshd_config
 
+RUN rm -rf /etc/ssh/ssh_host_rsa_key && ssh-keygen -N '' -t rsa -f /etc/ssh/ssh_host_rsa_key
+	
+# RUN echo '123456' | passwd --stdin root 
+RUN echo 'root:123456' | chpasswd
+
 EXPOSE 22
 
 COPY artifacts/shadow/shadow-linux-amd64 /usr/sbin/shadow

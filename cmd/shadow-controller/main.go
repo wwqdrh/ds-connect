@@ -3,17 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
 	docker "github.com/fsouza/go-dockerclient"
 
-	"github.com/wwqdrh/ds-connect/pkg/common"
-	"github.com/wwqdrh/ds-connect/pkg/ds/swarm"
-	"github.com/wwqdrh/ds-connect/pkg/service/dns"
+	"github.com/wwqdrh/ds-connect/pkg/swarm"
+	"github.com/wwqdrh/logger"
 )
 
 var client *docker.Client
@@ -24,28 +23,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func getEnvs(dnsmode string, debug bool) []string {
-	envs := []string{}
-
-	localDomains := dns.GetLocalDomains()
-	if localDomains != "" {
-		envs = append(envs, fmt.Sprintf("%s=%s", common.EnvVarLocalDomains, localDomains))
-	}
-
-	if strings.HasPrefix(dnsmode, common.DnsModeLocalDns) {
-		envs = append(envs, fmt.Sprintf("%s=%s", common.EnvVarDnsProtocol, "tcp"))
-	} else {
-		envs = append(envs, fmt.Sprintf("%s=%s", common.EnvVarDnsProtocol, "udp"))
-	}
-	if debug {
-		envs = append(envs, fmt.Sprintf("%s=%s", common.EnvVarLogLevel, "debug"))
-	} else {
-		envs = append(envs, fmt.Sprintf("%s=%s", common.EnvVarLogLevel, "info"))
-	}
-
-	return envs
 }
 
 func updateNetwork(ctx context.Context) {
@@ -67,7 +44,7 @@ func updateNetwork(ctx context.Context) {
 func main() {
 	_, err := swarm.ServiceInspect(client, "ds-connect-shadow")
 	if err != nil {
-		envs := getEnvs("localDNS", false)
+		envs := []string{}
 		id, err := swarm.ServiceCreate(client, "ds-connect-shadow", "wwqdrh/ds-connect-shadow:dev", envs)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -79,9 +56,40 @@ func main() {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	go updateNetwork(ctx)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/service/query", func(w http.ResponseWriter, r *http.Request) {
+		// 获取服务名的ip地址
+		name := r.URL.Query().Get("name")
+		servers, err := swarm.ServiceIPMap(client)
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+		}
+		if val, ok := servers[name]; !ok {
+			w.WriteHeader(404)
+			w.Write([]byte("not found"))
+		} else {
+			w.WriteHeader(200)
+			w.Write([]byte(val))
+		}
+	})
+	srv := http.Server{
+		Addr:         ":8080",
+		Handler:      mux,
+		WriteTimeout: time.Second * 3,
+	}
+	go func() {
+		logger.DefaultLogger.Info("Starting httpserver at :8080")
+		if err := srv.ListenAndServe(); err != nil {
+			logger.DefaultLogger.Error(err.Error())
+		}
+	}()
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
-	defer cancel()
+	srv.Close()
 }

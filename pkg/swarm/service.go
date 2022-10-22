@@ -8,6 +8,25 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 )
 
+func ServiceIPMap(engine *docker.Client) (map[string]string, error) {
+	res := map[string]string{}
+
+	srvs, err := engine.ListServices(docker.ListServicesOptions{Status: true})
+	if err != nil {
+		return nil, err
+	}
+	for _, srv := range srvs {
+		ips := srv.Endpoint.VirtualIPs
+		if len(ips) == 0 {
+			continue
+		}
+
+		addr := ips[0].Addr // "10.0.1.16/24"
+		res[srv.Spec.Name] = addr
+	}
+	return res, nil
+}
+
 func ServiceInspect(engine *docker.Client, name string) (*swarm.Service, error) {
 	srv, err := engine.InspectService(name)
 	if err != nil {

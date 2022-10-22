@@ -14,9 +14,7 @@ if [ -n "${privateKey}" ]; then
   echo "Private key created created"
 fi
 
-if [ "${DS_DNS_PROTOCOL}" = "" ]; then
-  echo "Skip shadow process"
-elif [ "${1}" = "--debug" ]; then
+if [ "${1}" = "--debug" ]; then
   echo "Run shadow in debug mode"
   /usr/sbin/dlv --listen=:2345 --headless=true --api-version=2 --accept-multiclient exec /usr/sbin/shadow &
 else

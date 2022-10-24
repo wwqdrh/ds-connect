@@ -2,17 +2,24 @@ module github.com/wwqdrh/ds-connect
 
 go 1.18
 
+replace (
+	github.com/wwqdrh/nettool v0.0.0-20221024025010-9990cfd11043 => ../nettool
+	github.com/wwqdrh/ostool v0.0.0-20221024032333-a4c63e32e8b4 => ../ostool
+)
+
 require (
 	github.com/alibaba/kt-connect v0.3.6
 	github.com/docker/docker v20.10.19+incompatible
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/fsouza/go-dockerclient v1.9.0
 	github.com/mitchellh/go-ps v1.0.0
 	github.com/rs/zerolog v1.28.0
+	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.8.0
 	github.com/wwqdrh/logger v0.0.9
+	github.com/wwqdrh/nettool v0.0.0-20221024025010-9990cfd11043
 	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
+	golang.org/x/sys v0.0.0-20220908164124-27713097b956
 )
 
 require (
@@ -26,6 +33,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/miekg/dns v1.1.50 // indirect
@@ -39,6 +47,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/wwqdrh/ostool v0.0.0-20221024032333-a4c63e32e8b4 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect

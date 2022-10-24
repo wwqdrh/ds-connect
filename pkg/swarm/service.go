@@ -86,7 +86,7 @@ func ServiceUpdateNet(engine *docker.Client, srvName string, networks []string) 
 	spec := srv.Spec
 	spec.TaskTemplate.Networks = nets
 	return engine.UpdateService(srvName, docker.UpdateServiceOptions{
-		Version:     srv.Version.Index + 1,
+		Version:     srv.Version.Index,
 		ServiceSpec: spec,
 	})
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -60,22 +61,8 @@ func main() {
 	go updateNetwork(ctx)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/service/query", func(w http.ResponseWriter, r *http.Request) {
-		// 获取服务名的ip地址
-		name := r.URL.Query().Get("name")
-		servers, err := swarm.ServiceIPMap(client)
-		if err != nil {
-			w.WriteHeader(500)
-			w.Write([]byte(err.Error()))
-		}
-		if val, ok := servers[name]; !ok {
-			w.WriteHeader(404)
-			w.Write([]byte("not found"))
-		} else {
-			w.WriteHeader(200)
-			w.Write([]byte(val))
-		}
-	})
+	registerService(mux)
+
 	srv := http.Server{
 		Addr:         ":18080",
 		Handler:      mux,
@@ -92,4 +79,46 @@ func main() {
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP)
 	<-quit
 	srv.Close()
+}
+
+func registerService(engine *http.ServeMux) {
+	engine.HandleFunc("/service/query", func(w http.ResponseWriter, r *http.Request) {
+		// 获取服务名的ip地址
+		name := r.URL.Query().Get("name")
+		servers, err := swarm.ServiceIPMap(client)
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+			return
+		}
+		if val, ok := servers[name]; !ok {
+			w.WriteHeader(404)
+			w.Write([]byte("not found"))
+		} else {
+			w.WriteHeader(200)
+			w.Write([]byte(val))
+		}
+	})
+
+	engine.HandleFunc("/service/dnsmap", func(w http.ResponseWriter, r *http.Request) {
+		servers, err := swarm.ServiceIPMap(client)
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+		} else {
+			res := []string{}
+			for _, val := range servers {
+				res = append(res, val)
+			}
+
+			data, err := json.Marshal(res)
+			if err != nil {
+				w.WriteHeader(500)
+				w.Write([]byte(err.Error()))
+			} else {
+				w.WriteHeader(200)
+				w.Write(data)
+			}
+		}
+	})
 }

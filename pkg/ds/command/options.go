@@ -1,9 +1,12 @@
 package command
 
 type ConnectOptions struct {
-	ClusterDomain string
-	ProxyPort     int
-	DnsCacheTtl   int
+	Shadow      string
+	SshUser     string
+	SshPass     string
+	ProxyPort   int
+	DnsPort     int
+	DnsCacheTtl int
 }
 
 // DaemonOptions cli options

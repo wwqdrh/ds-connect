@@ -5,8 +5,27 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/wwqdrh/clitool"
 	"github.com/wwqdrh/nettool/common"
 )
+
+var connectFlags = []clitool.OptionConfig{
+	{
+		Target:       "ClusterDomain",
+		DefaultValue: "127.0.0.1:18080",
+		Description:  "docker swarm集群的服务地址",
+	},
+	{
+		Target:       "ProxyPort",
+		DefaultValue: 2223,
+		Description:  "(tun2socks mode only) Specify the local port which socks5 proxy should use",
+	},
+	{
+		Target:       "DnsCacheTtl",
+		DefaultValue: 60,
+		Description:  "(local dns mode only) DNS cache refresh interval in seconds",
+	},
+}
 
 // NewConnectCommand return new connect command
 func NewConnectCommand() *cobra.Command {
@@ -28,11 +47,13 @@ func NewConnectCommand() *cobra.Command {
 		Example: "ktctl connect [command options]",
 	}
 
+	clitool.SetOptions(cmd, cmd.Flags(), Opts().Connect, connectFlags)
 	return cmd
 }
 
 func Connect() error {
 	fmt.Println("do a connect")
+	fmt.Println(Opts().Connect.ClusterDomain, Opts().Connect.DnsCacheTtl)
 	return nil
 }
 

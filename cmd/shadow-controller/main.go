@@ -77,7 +77,7 @@ func main() {
 		}
 	})
 	srv := http.Server{
-		Addr:         ":8080",
+		Addr:         ":18080",
 		Handler:      mux,
 		WriteTimeout: time.Second * 3,
 	}
@@ -89,7 +89,7 @@ func main() {
 	}()
 
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP)
 	<-quit
 	srv.Close()
 }

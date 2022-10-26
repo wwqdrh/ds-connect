@@ -25,7 +25,7 @@ var connectFlags = []clitool.OptionConfig{
 	},
 	{
 		Target:       "SshUser",
-		DefaultValue: "123456",
+		DefaultValue: "root",
 		Description:  "ssh用户名",
 	},
 	{
@@ -80,13 +80,16 @@ func NewConnectCommand() *cobra.Command {
 // 4、启动dns server
 func Connect() error {
 	fmt.Println("do a connect")
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
 	channel := ssh.NewChannel(ssh.ChannelWithAuth(
 		Opts().Connect.SshUser, Opts().Connect.SshPass,
 	))
 	sockAddr := fmt.Sprintf("127.0.0.1:%d", Opts().Connect.ProxyPort)
 
 	go func() {
-		if err := channel.StartSocks5Proxy(sockAddr); err != nil {
+		if err := channel.StartSocks5Proxy(ctx, sockAddr); err != nil {
 			logger.DefaultLogger.Error(err.Error())
 		}
 	}()
@@ -95,7 +98,7 @@ func Connect() error {
 		t := tun.Ins()
 		// 设置路由规则
 		go func() {
-			if err := t.ToSocks(sockAddr); err != nil {
+			if err := t.ToSocks(ctx, sockAddr); err != nil {
 				logger.DefaultLogger.Error(err.Error())
 			}
 		}()
@@ -118,7 +121,7 @@ func Connect() error {
 		return ip
 	}, Opts().Connect.DnsPort)
 	// TODO(暂时手动设置dns域名) 设置iptables规则
-	dnsserver.Server(context.TODO())
+	dnsserver.Server(ctx)
 
 	return nil
 }

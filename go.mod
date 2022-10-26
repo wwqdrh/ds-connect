@@ -68,9 +68,4 @@ require (
 	gvisor.dev/gvisor v0.0.0-20220405222207-795f4f0139bb // indirect
 )
 
-replace (
-	github.com/wwqdrh/clitool v0.0.0-20221025031738-dfe3c08ac76f => ../clitool
-	github.com/wwqdrh/nettool v0.0.0-20221025063815-56396e50e7f3 => ../nettool
-	github.com/wwqdrh/ostool v0.0.0-20221024032333-a4c63e32e8b4 => ../ostool
-	github.com/xjasonlyu/tun2socks/v2 v2.4.1 => github.com/linfan/tun2socks/v2 v2.4.2-0.20220501081747-6f4a45525a7c
-)
+replace github.com/xjasonlyu/tun2socks/v2 v2.4.1 => github.com/linfan/tun2socks/v2 v2.4.2-0.20220501081747-6f4a45525a7c

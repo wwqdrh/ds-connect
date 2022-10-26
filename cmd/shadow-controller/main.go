@@ -27,7 +27,7 @@ func init() {
 }
 
 func updateNetwork(ctx context.Context) {
-	t := time.NewTicker(10 * time.Second)
+	t := time.NewTicker(2 * time.Minute)
 	defer t.Stop()
 	for {
 		select {
